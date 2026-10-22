@@ -1,0 +1,211 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Dark mode is class-based: <html class="dark">. The class is set before first paint
+   from the theme cookie (see app/layout.tsx), so there is no flash. */
+@custom-variant dark (&:is(.dark *));
+
+/* ---------------------------------------------------------------------------
+   Design tokens. Every colour below is checked for WCAG AA in tests/contrast
+   (text >= 4.5:1, UI boundaries and focus rings >= 3:1).
+   ------------------------------------------------------------------------- */
+:root {
+  color-scheme: light;
+
+  /* Surfaces */
+  --background: #f7faf9;
+  --foreground: #0f1f1d;
+  --card: #ffffff;
+  --card-foreground: #0f1f1d;
+  --popover: #ffffff;
+  --popover-foreground: #0f1f1d;
+  --muted: #edf3f2;
+  --muted-foreground: #4a5f5b;
+
+  /* Brand */
+  --primary: #0f766e;
+  --primary-foreground: #ffffff;
+  --secondary: #e0eeeb;
+  --secondary-foreground: #0f3d38;
+  --accent: #d5ece8;
+  --accent-foreground: #0b4a43;
+
+  /* Lines and focus */
+  --border: #d3dfdc;
+  --input: #7a908c;
+  --ring: #0f766e;
+
+  /* Status */
+  --success: #166534;
+  --success-foreground: #ffffff;
+  --warning: #92400e;
+  --warning-foreground: #ffffff;
+  --danger: #b91c1c;
+  --danger-foreground: #ffffff;
+  --info: #0369a1;
+  --info-foreground: #ffffff;
+  --destructive: var(--danger);
+
+  /* Navigation */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f1f1d;
+  --sidebar-primary: #0f766e;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e0eeeb;
+  --sidebar-accent-foreground: #0b4a43;
+  --sidebar-border: #d3dfdc;
+  --sidebar-ring: #0f766e;
+
+  /* Charts (reserved for later phases) */
+  --chart-1: #0f766e;
+  --chart-2: #0369a1;
+  --chart-3: #92400e;
+  --chart-4: #7c3aed;
+  --chart-5: #be185d;
+
+  /* Shape, elevation and rhythm */
+  --radius: 0.625rem;
+  --shadow-sm: 0 1px 2px 0 rgb(15 31 29 / 0.06);
+  --shadow-md: 0 4px 12px -2px rgb(15 31 29 / 0.1), 0 2px 4px -2px rgb(15 31 29 / 0.06);
+  --shadow-lg: 0 12px 28px -6px rgb(15 31 29 / 0.16), 0 4px 8px -4px rgb(15 31 29 / 0.08);
+}
+
+.dark {
+  color-scheme: dark;
+
+  --background: #0a1514;
+  --foreground: #e6f2f0;
+  --card: #10201e;
+  --card-foreground: #e6f2f0;
+  --popover: #10201e;
+  --popover-foreground: #e6f2f0;
+  --muted: #162a28;
+  --muted-foreground: #9db5b1;
+
+  --primary: #2dd4bf;
+  --primary-foreground: #042f2e;
+  --secondary: #1a3330;
+  --secondary-foreground: #d6eeea;
+  --accent: #1e3d39;
+  --accent-foreground: #d6eeea;
+
+  --border: #25403c;
+  --input: #5f7f7a;
+  --ring: #2dd4bf;
+
+  --success: #4ade80;
+  --success-foreground: #052e16;
+  --warning: #fbbf24;
+  --warning-foreground: #1f1300;
+  --danger: #f87171;
+  --danger-foreground: #2a0707;
+  --info: #38bdf8;
+  --info-foreground: #04223a;
+
+  --sidebar: #0c1a19;
+  --sidebar-foreground: #e6f2f0;
+  --sidebar-primary: #2dd4bf;
+  --sidebar-primary-foreground: #042f2e;
+  --sidebar-accent: #1a3330;
+  --sidebar-accent-foreground: #d6eeea;
+  --sidebar-border: #25403c;
+  --sidebar-ring: #2dd4bf;
+
+  --chart-1: #2dd4bf;
+  --chart-2: #38bdf8;
+  --chart-3: #fbbf24;
+  --chart-4: #a78bfa;
+  --chart-5: #f472b6;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 12px 28px -6px rgb(0 0 0 / 0.6), 0 4px 8px -4px rgb(0 0 0 / 0.5);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-destructive: var(--danger);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+
+  --spacing: 0.25rem;
+
+  --font-sans:
+    var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-heading: var(--font-sans);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans antialiased;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

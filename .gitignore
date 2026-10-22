@@ -1,0 +1,87 @@
+# ---------------------------------------------------------------------------
+# Secrets and local configuration (never commit; .env.example documents every variable)
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+auth.json
+docker-compose.override.yml
+
+# ---------------------------------------------------------------------------
+# Dependencies (installed by Docker / Composer / npm)
+# ---------------------------------------------------------------------------
+vendor/
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+
+# ---------------------------------------------------------------------------
+# Build output and caches
+# ---------------------------------------------------------------------------
+.next/
+out/
+build/
+dist/
+coverage/
+*.tsbuildinfo
+.eslintcache
+.phpunit.cache/
+.phpunit.result.cache
+.php-cs-fixer.cache
+.cache/
+.turbo/
+next-env.d.ts
+
+# ---------------------------------------------------------------------------
+# Runtime data (uploads, logs, framework caches)
+# ---------------------------------------------------------------------------
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+api/storage/app/*
+!api/storage/app/.gitignore
+api/storage/logs/*
+!api/storage/logs/.gitignore
+api/storage/framework/cache/data/*
+api/storage/framework/sessions/*
+api/storage/framework/testing/*
+api/storage/framework/views/*
+api/bootstrap/cache/*.php
+
+# ---------------------------------------------------------------------------
+# Editors, IDEs and tooling
+# ---------------------------------------------------------------------------
+.idea/
+.vscode/
+.vs/
+.fleet/
+.zed/
+.nova/
+.cursor/
+.codex/
+.claude/
+*.iml
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+.history/
+
+# ---------------------------------------------------------------------------
+# Operating system files
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/

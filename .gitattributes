@@ -1,0 +1,18 @@
+# Normalise every text file to LF in the repository and in working copies,
+# so Windows checkouts do not rewrite line endings (and shell scripts keep working in Linux containers).
+* text=auto eol=lf
+
+*.sh text eol=lf
+*.conf text eol=lf
+*.template text eol=lf
+Dockerfile text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary

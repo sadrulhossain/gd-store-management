@@ -1,0 +1,73 @@
+# Production overrides:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# Terminate TLS in a reverse proxy in front of the gateway (see README).
+
+x-api-prod-environment: &api-prod-environment
+  APP_ENV: production
+  APP_DEBUG: "false"
+  APP_KEY: ${APP_KEY:?APP_KEY must be set in .env}
+  PASSPORT_PRIVATE_KEY: ${PASSPORT_PRIVATE_KEY:?PASSPORT_PRIVATE_KEY must be set in .env}
+  PASSPORT_PUBLIC_KEY: ${PASSPORT_PUBLIC_KEY:?PASSPORT_PUBLIC_KEY must be set in .env}
+  PASSPORT_PORTAL_CLIENT_ID: ${PASSPORT_PORTAL_CLIENT_ID:?PASSPORT_PORTAL_CLIENT_ID must be set in .env}
+  PASSPORT_PORTAL_CLIENT_SECRET: ${PASSPORT_PORTAL_CLIENT_SECRET:?PASSPORT_PORTAL_CLIENT_SECRET must be set in .env}
+
+services:
+  store-postgres:
+    restart: always
+    ports: !reset []
+
+  store-api:
+    user: !reset null
+    build:
+      target: api-prod
+    image: store-api:${STORE_IMAGE_TAG:-prod}
+    restart: always
+    environment:
+      <<: *api-prod-environment
+      RUN_MIGRATIONS: ${RUN_MIGRATIONS:-false}
+    volumes: !override
+      - store-uploads:/var/www/html/storage/app
+
+  store-worker:
+    build:
+      target: api-prod
+    user: !reset null
+    image: store-api:${STORE_IMAGE_TAG:-prod}
+    restart: always
+    environment:
+      <<: *api-prod-environment
+    volumes: !override
+      - store-uploads:/var/www/html/storage/app
+
+  store-scheduler:
+    build:
+      target: api-prod
+    user: !reset null
+    image: store-api:${STORE_IMAGE_TAG:-prod}
+    restart: always
+    environment:
+      <<: *api-prod-environment
+    volumes: !override
+      - store-uploads:/var/www/html/storage/app
+
+  store-nginx:
+    build:
+      target: nginx-gateway-prod
+    image: store-nginx:${STORE_IMAGE_TAG:-prod}
+    restart: always
+
+  store-portal:
+    user: !reset null
+    build:
+      target: portal-prod
+    image: store-portal:${STORE_IMAGE_TAG:-prod}
+    restart: always
+    environment: !override
+      API_INTERNAL_URL: http://store-nginx:8080/api/v1
+      GATEWAY_URL: http://store-nginx:8080
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-14}
+    volumes: !override []
+
+  store-adminer:
+    profiles: !override [disabled-in-production]
