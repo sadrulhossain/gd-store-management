@@ -4,6 +4,51 @@ Foundation for a single-store management system: Docker infrastructure, authenti
 roles/permissions/menus and a themed portal shell. Business modules (products, purchasing, stock,
 POS, …) plug into it later.
 
+## Application summary
+
+**What it is.** A web application for running one retail store. Staff sign in to a browser portal;
+what each person sees and can do depends on their role. This first phase delivers the secure base
+every later feature builds on, so new modules only need to add their own screens, routes and
+permissions.
+
+**Who uses it.**
+
+| Role       | Typical person        | Default access                                                                 |
+| ---------- | --------------------- | ------------------------------------------------------------------------------ |
+| `owner`    | Store owner           | Everything. Always holds every permission; cannot be locked out or demoted.    |
+| `manager`  | Shift or store manager | Dashboard, all business modules and reports, plus view/create/edit users (Employees only). |
+| `employee` | Cashier, shop floor   | Dashboard, point-of-sale selling and holding, view products, view/add customers, view stock. |
+
+The Owner can edit what Manager and Employee may do, and can create extra roles (for example
+`stock-keeper`). Each user has exactly one role.
+
+**What works today.**
+
+- **Sign-in and sessions:** username and password, forced password change on first sign-in and after
+  an administrator reset, automatic session renewal, sign-out everywhere on deactivation or reset,
+  login throttling.
+- **Users:** search, filter by role and status, sort, paginate; create, edit, activate/deactivate,
+  soft-delete, reset password; profile photos (JPEG/PNG/WebP, resized to 512×512 WebP); every change
+  written to an activity log. The Owner manages everyone, a Manager manages only Employees, nobody can
+  delete or deactivate themselves, and the last active Owner is protected.
+- **Roles and permissions:** a grouped permission matrix per role, a read-only permission catalogue,
+  and changes that apply on the next request. The catalogue already lists the planned business
+  modules (catalog, suppliers, purchasing, inventory, point of sale, customers, expenses, reports).
+- **Menus:** the sidebar is data-driven; each item is linked to a permission, so people only see what
+  they may use. Owners can add, reorder, hide and edit items without a deployment.
+- **Portal shell:** light and dark themes (remembered without flicker), collapsible sidebar and
+  mobile drawer, breadcrumbs, 403 and 404 pages, toasts, confirmation dialogs, loading, empty and
+  error states.
+- **Settings:** store name, currency (BDT), timezone (Asia/Dhaka) and date format are stored and
+  served publicly; an editing screen is planned.
+
+**Planned next** (permissions and menu slots are already reserved): product catalogue and pricing,
+suppliers and purchasing, stock control (adjustments, write-offs, stocktakes), point of sale (sales,
+holds, discounts, returns, cashier sessions), customers and credit, expenses, and reports.
+
+**Scope.** One store, one database, English only, online only. TLS termination, Redis, CI/CD and
+Bangla localisation are intentionally out of scope for this phase.
+
 | Part       | Stack                                                                                  |
 | ---------- | -------------------------------------------------------------------------------------- |
 | API        | Laravel 13 (PHP 8.4), Passport 13, spatie/laravel-permission, activitylog, query-builder |
