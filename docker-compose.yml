@@ -5,20 +5,20 @@ x-api-environment: &api-environment
   APP_NAME: ${APP_NAME:-Store Management}
   APP_ENV: ${APP_ENV:-local}
   APP_DEBUG: ${APP_DEBUG:-true}
-  APP_URL: ${APP_URL:-http://localhost:8080}
-  LOG_CHANNEL: stderr
+  APP_URL: ${APP_URL:-http://localhost:${GATEWAY_PORT:-38080}}
+  LOG_CHANNEL: ${LOG_CHANNEL:-stderr}
   LOG_LEVEL: ${LOG_LEVEL:-debug}
-  DB_CONNECTION: pgsql
-  DB_HOST: store-postgres
-  DB_PORT: "5432"
+  DB_CONNECTION: ${DB_CONNECTION:-pgsql}
+  DB_HOST: ${DB_HOST:-store-postgres}
+  DB_PORT: ${DB_PORT:-5432}
   DB_DATABASE: ${DB_DATABASE:-store}
   DB_USERNAME: ${DB_USERNAME:-store}
   DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set in .env}
-  QUEUE_CONNECTION: database
-  CACHE_STORE: database
-  SESSION_DRIVER: array
-  FILESYSTEM_DISK: private
-  STORAGE_PUBLIC_URL: /storage
+  QUEUE_CONNECTION: ${QUEUE_CONNECTION:-database}
+  CACHE_STORE: ${CACHE_STORE:-database}
+  SESSION_DRIVER: ${SESSION_DRIVER:-array}
+  FILESYSTEM_DISK: ${FILESYSTEM_DISK:-private}
+  STORAGE_PUBLIC_URL: ${STORAGE_PUBLIC_URL:-/storage}
   UPLOAD_MAX_SIZE: ${UPLOAD_MAX_SIZE:-5M}
   PHP_FPM_MAX_CHILDREN: ${PHP_FPM_MAX_CHILDREN:-10}
   ACCESS_TOKEN_TTL_MINUTES: ${ACCESS_TOKEN_TTL_MINUTES:-15}
@@ -63,7 +63,7 @@ services:
     volumes:
       - store-pgdata:/var/lib/postgresql
     ports:
-      - "127.0.0.1:${POSTGRES_HOST_PORT:-5432}:5432"
+      - "${POSTGRES_BIND_ADDRESS:-127.0.0.1}:${POSTGRES_HOST_PORT:-35432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -148,7 +148,7 @@ services:
     volumes:
       - store-uploads:/var/www/html/storage/app:ro
     ports:
-      - "${GATEWAY_PORT:-8080}:8080"
+      - "${GATEWAY_PORT:-38080}:8080"
     depends_on:
       store-api:
         condition: service_healthy
@@ -169,16 +169,16 @@ services:
     user: "${DEV_USER:-0:0}"
     restart: unless-stopped
     environment:
-      API_INTERNAL_URL: http://store-nginx:8080/api/v1
-      GATEWAY_URL: http://store-nginx:8080
+      API_INTERNAL_URL: ${API_INTERNAL_URL:-http://store-nginx:8080/api/v1}
+      GATEWAY_URL: ${GATEWAY_URL:-http://store-nginx:8080}
       REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-14}
-      WATCHPACK_POLLING: "true"
+      WATCHPACK_POLLING: ${WATCHPACK_POLLING:-true}
     volumes:
       - ./portal:/app
       - store-node-modules:/app/node_modules
       - store-next-cache:/app/.next
     ports:
-      - "${PORTAL_PORT:-3000}:3000"
+      - "${PORTAL_PORT:-33000}:3000"
     depends_on:
       store-nginx:
         condition: service_healthy
@@ -196,9 +196,9 @@ services:
     profiles: [tools]
     restart: unless-stopped
     environment:
-      ADMINER_DEFAULT_SERVER: store-postgres
+      ADMINER_DEFAULT_SERVER: ${DB_HOST:-store-postgres}
     ports:
-      - "127.0.0.1:${ADMINER_HOST_PORT:-8081}:8080"
+      - "127.0.0.1:${ADMINER_HOST_PORT:-38081}:8080"
     depends_on:
       store-postgres:
         condition: service_healthy
