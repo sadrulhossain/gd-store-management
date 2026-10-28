@@ -13,6 +13,7 @@ import { MenuIcon } from "@/components/common/menu-icon";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setMobileNavOpen, toggleSidebar } from "@/store/ui-slice";
+import { BgGlass as SidebarGlass } from "@/components/ui/bg-glass";
 
 function isActive(pathname: string, path: string | null): boolean {
   return path !== null && (pathname === path || pathname.startsWith(`${path}/`));
@@ -163,21 +164,6 @@ function Brand({ collapsed }: { collapsed: boolean }) {
   );
 }
 
-/** Photo backdrop with a frosted, green-tinted glass pane between the image and the content. */
-function SidebarGlass() {
-  return (
-    <>
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-20 bg-[url('/images/sidebar-bg-img.jpg')] bg-cover bg-center"
-      />
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10 bg-sidebar-glass backdrop-blur-xs backdrop-saturate-150"
-      />
-    </>
-  );
-}
 
 /** Desktop sidebar: collapsible to an icon rail. */
 export function DesktopSidebar({ menu }: { menu: MenuNode[] }) {
