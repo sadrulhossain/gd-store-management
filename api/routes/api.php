@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\RouteHelper;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\MenuController;
@@ -30,33 +31,58 @@ Route::prefix('v1')->group(function (): void {
     Route::middleware(['auth:api', 'account.active', 'password.changed'])->group(function (): void {
         Route::get('menus/my', [MenuController::class, 'my']);
 
-        Route::middleware('permission:users.view')->group(function (): void {
-            Route::get('users', [UserController::class, 'index']);
-            Route::get('users/{user}', [UserController::class, 'show']);
-        });
-        Route::post('users', [UserController::class, 'store'])->middleware('permission:users.create');
-        Route::match(['put', 'patch'], 'users/{user}', [UserController::class, 'update'])->middleware('permission:users.update');
-        Route::patch('users/{user}/status', [UserController::class, 'status'])->middleware('permission:users.update');
-        Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->middleware('permission:users.reset_password');
-        Route::delete('users/{user}', [UserController::class, 'destroy'])->middleware('permission:users.delete');
+        Route::prefix('users')
+            ->controller(UserController::class)
+            ->group(function (): void {
+                $permission = RouteHelper::permissionPrefix('users');
 
-        Route::middleware('permission:roles.view')->group(function (): void {
-            Route::get('roles', [RoleController::class, 'index']);
-            Route::get('roles/{role}', [RoleController::class, 'show']);
-        });
-        Route::post('roles', [RoleController::class, 'store'])->middleware('permission:roles.create');
-        Route::match(['put', 'patch'], 'roles/{role}', [RoleController::class, 'update'])->middleware('permission:roles.update');
-        Route::delete('roles/{role}', [RoleController::class, 'destroy'])->middleware('permission:roles.delete');
+                Route::middleware($permission . 'view')->group(function (): void {
+                    Route::get('', 'index');
+                    Route::get('{user}', 'show');
+                });
+                Route::post('', 'store')->middleware($permission . 'create');
+                Route::match(['put', 'patch'], '{user}', 'update')
+                    ->middleware($permission . 'update');
+                Route::patch('{user}/status', 'status')->middleware($permission . 'update');
+                Route::post('{user}/reset-password', 'resetPassword')
+                    ->middleware($permission . 'reset_password');
+                Route::delete('{user}', 'destroy')->middleware($permission . 'delete');
+            });
 
-        Route::get('permissions', [PermissionController::class, 'index'])->middleware('permission:permissions.view');
+        Route::prefix('roles')
+            ->controller(RoleController::class)
+            ->group(function (): void {
+                $permission = RouteHelper::permissionPrefix('roles');
 
-        Route::middleware('permission:menus.view')->group(function (): void {
-            Route::get('menus', [MenuController::class, 'index']);
-            Route::get('menus/icons', [MenuController::class, 'icons']);
-        });
-        Route::post('menus', [MenuController::class, 'store'])->middleware('permission:menus.create');
-        Route::put('menus/reorder', [MenuController::class, 'reorder'])->middleware('permission:menus.update');
-        Route::match(['put', 'patch'], 'menus/{menu}', [MenuController::class, 'update'])->middleware('permission:menus.update');
-        Route::delete('menus/{menu}', [MenuController::class, 'destroy'])->middleware('permission:menus.delete');
+                Route::middleware($permission . 'view')->group(function (): void {
+                    Route::get('', 'index');
+                    Route::get('{role}', 'show');
+                });
+                Route::post('', 'store')->middleware($permission . 'create');
+                Route::match(['put', 'patch'], '{role}', 'update')
+                    ->middleware($permission . 'update');
+                Route::delete('{role}', 'destroy')->middleware($permission . 'delete');
+            });
+
+
+
+        Route::get('permissions', [PermissionController::class, 'index'])
+            ->middleware('permission:permissions.view');
+
+        Route::prefix('menus')
+            ->controller(MenuController::class)
+            ->group(function (): void {
+                $permission = RouteHelper::permissionPrefix('menus');
+
+                Route::middleware($permission . 'view')->group(function (): void {
+                    Route::get('', 'index');
+                    Route::get('icons', 'icons');
+                });
+                Route::post('', 'store')->middleware($permission . 'create');
+                Route::match(['put', 'patch'], '{menu}', 'update')
+                    ->middleware($permission . 'update');
+                Route::delete('{menu}', 'destroy')->middleware($permission . 'delete');
+            });
+
     });
 });
