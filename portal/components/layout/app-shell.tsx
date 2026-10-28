@@ -76,7 +76,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <MobileSidebar menu={menu} />
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b bg-background/90 px-4 backdrop-blur sm:px-6">
+          <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b bg-topbar px-4 sm:px-6">
             <Button
               variant="ghost"
               size="icon"
