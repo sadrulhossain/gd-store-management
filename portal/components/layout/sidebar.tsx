@@ -25,7 +25,7 @@ function hasActiveChild(pathname: string, node: MenuNode): boolean {
 }
 
 const itemClasses =
-  "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/80 outline-none transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-3 focus-visible:ring-sidebar-ring/50";
+  "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/90 outline-none transition-colors hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground focus-visible:ring-3 focus-visible:ring-sidebar-ring/50";
 const activeClasses = "bg-sidebar-accent text-sidebar-accent-foreground";
 
 interface NavProps {
@@ -57,7 +57,7 @@ function NavLeaf({
       className={cn(itemClasses, active && activeClasses, depth > 0 && !collapsed && "pl-10")}
     >
       <MenuIcon icon={node.icon} className="size-4 shrink-0" />
-      <span className={cn("truncate", collapsed && "sr-only")}>{node.title}</span>
+      <span className={cn("truncate font-semibold", collapsed && "sr-only")}>{node.title}</span>
     </Link>
   );
 
@@ -158,8 +158,24 @@ function Brand({ collapsed }: { collapsed: boolean }) {
       <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
         <StoreIcon className="size-5" aria-hidden />
       </div>
-      <span className={cn("truncate font-semibold", collapsed && "sr-only")}>{storeName}</span>
+      <span className={cn("truncate font-bold", collapsed && "sr-only")}>{storeName}</span>
     </div>
+  );
+}
+
+/** Photo backdrop with a frosted, green-tinted glass pane between the image and the content. */
+function SidebarGlass() {
+  return (
+    <>
+      <div
+        aria-hidden
+        className="absolute inset-0 -z-20 bg-[url('/images/sidebar-bg-img.jpg')] bg-cover bg-center"
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 -z-10 bg-sidebar-glass backdrop-blur-l backdrop-saturate-150"
+      />
+    </>
   );
 }
 
@@ -171,23 +187,24 @@ export function DesktopSidebar({ menu }: { menu: MenuNode[] }) {
   return (
     <aside
       className={cn(
-        "sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200 md:flex",
+        "isolate sticky top-0 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200 md:flex",
         collapsed ? "w-[4.5rem]" : "w-64",
       )}
     >
+      <SidebarGlass />
       <Brand collapsed={collapsed} />
       <SidebarNav menu={menu} collapsed={collapsed} onExpand={() => dispatch(toggleSidebar())} />
       <div className="border-t border-sidebar-border p-3">
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-start gap-3 px-3 text-sidebar-foreground/80"
+          className="w-full justify-start gap-3 px-3 text-sidebar-foreground/90"
           onClick={() => dispatch(toggleSidebar())}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           aria-pressed={collapsed}
         >
           {collapsed ? <PanelLeftOpenIcon aria-hidden /> : <PanelLeftCloseIcon aria-hidden />}
-          <span className={cn(collapsed && "sr-only")}>Collapse</span>
+          <span className={cn("font-semibold", collapsed && "sr-only")}>Collapse</span>
         </Button>
       </div>
     </aside>
@@ -201,9 +218,10 @@ export function MobileSidebar({ menu }: { menu: MenuNode[] }) {
 
   return (
     <Sheet open={open} onOpenChange={(next) => dispatch(setMobileNavOpen(next))}>
-      <SheetContent side="left" className="w-72 gap-0 bg-sidebar p-0 text-sidebar-foreground">
+      <SheetContent side="left" className="isolate w-72 gap-0 overflow-hidden bg-sidebar p-0 text-sidebar-foreground">
         <SheetTitle className="sr-only">Navigation</SheetTitle>
         <SheetDescription className="sr-only">Main navigation menu</SheetDescription>
+        <SidebarGlass />
         <Brand collapsed={false} />
         <SidebarNav
           menu={menu}

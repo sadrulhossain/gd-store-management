@@ -67,10 +67,12 @@ export function LoginForm() {
 
   return (
     <Card className="w-full max-w-sm shadow-lg">
-      <CardHeader className="items-center text-center">
-        <div className="mb-2 flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+      <CardHeader className="items-center text-center justify-center">
+        <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
           <StoreIcon className="size-6" aria-hidden />
         </div>
+      </CardHeader>
+      <CardHeader className="items-center text-center justify-center">
         <CardTitle className="text-xl">{storeName}</CardTitle>
         <CardDescription>Sign in to continue</CardDescription>
       </CardHeader>
