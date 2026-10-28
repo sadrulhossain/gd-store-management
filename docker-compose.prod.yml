@@ -3,8 +3,8 @@
 # Terminate TLS in a reverse proxy in front of the gateway (see README).
 
 x-api-prod-environment: &api-prod-environment
-  APP_ENV: production
-  APP_DEBUG: "false"
+  APP_ENV: ${APP_ENV_PROD:-production}
+  APP_DEBUG: ${APP_DEBUG_PROD:-false}
   APP_KEY: ${APP_KEY:?APP_KEY must be set in .env}
   PASSPORT_PRIVATE_KEY: ${PASSPORT_PRIVATE_KEY:?PASSPORT_PRIVATE_KEY must be set in .env}
   PASSPORT_PUBLIC_KEY: ${PASSPORT_PUBLIC_KEY:?PASSPORT_PUBLIC_KEY must be set in .env}
@@ -63,8 +63,8 @@ services:
     image: store-portal:${STORE_IMAGE_TAG:-prod}
     restart: always
     environment: !override
-      API_INTERNAL_URL: http://store-nginx:8080/api/v1
-      GATEWAY_URL: http://store-nginx:8080
+      API_INTERNAL_URL: ${API_INTERNAL_URL:-http://store-nginx:8080/api/v1}
+      GATEWAY_URL: ${GATEWAY_URL:-http://store-nginx:8080}
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
       REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-14}
     volumes: !override []

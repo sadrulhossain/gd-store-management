@@ -66,9 +66,9 @@ docker compose ps                   # everything should become "healthy"
 
 | URL                          | What                                                        |
 | ---------------------------- | ----------------------------------------------------------- |
-| http://localhost:3000        | Portal                                                      |
-| http://localhost:8080        | Gateway (`/api/v1/...`, `/storage/...`, and the portal)     |
-| http://localhost:8081        | Adminer (only with `docker compose --profile tools up -d`)  |
+| http://localhost:33000       | Portal                                                      |
+| http://localhost:38080       | Gateway (`/api/v1/...`, `/storage/...`, and the portal)     |
+| http://localhost:38081       | Adminer (only with `docker compose --profile tools up -d`)  |
 
 On first start the API container generates the app key, Passport keys and the portal's Passport client
 into `api/.env` / `api/storage` (git-ignored), runs migrations, and **you seed once**:
@@ -150,7 +150,7 @@ Everything is configured through environment variables; the root `.env.example` 
 ## Architecture
 
 ```
-Browser ──► Portal (Next.js, :3000)  ──► /bff/* route handlers ──► Gateway (nginx) ──► Laravel (PHP-FPM) ──► PostgreSQL
+Browser ──► Portal (Next.js, host :33000)  ──► /bff/* route handlers ──► Gateway (nginx) ──► Laravel (PHP-FPM) ──► PostgreSQL
                 │                                   (tokens in httpOnly cookies)
                 └─ /storage/* rewritten to the gateway so images load from the portal's origin
 ```
