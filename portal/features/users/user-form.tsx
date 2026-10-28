@@ -113,156 +113,157 @@ export function UserForm({ user }: UserFormProps) {
         </p>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile</CardTitle>
-          <CardDescription>Basic details shown across the portal.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <Controller
-            control={control}
-            name="avatar"
-            render={({ field }) => (
-              <AvatarUploader
-                name={watchedName}
-                currentUrl={user?.avatar_url}
-                file={field.value}
-                removed={watchedRemoved}
-                onFileChange={field.onChange}
-                onRemovedChange={(removed) => setValue("removeAvatar", removed)}
-                error={errors.avatar?.message}
-              />
-            )}
-          />
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FormField label="Full name" htmlFor="name" error={errors.name?.message} required>
-              <Input
-                {...fieldA11y("name", errors.name?.message)}
-                autoComplete="off"
-                {...register("name")}
-              />
-            </FormField>
-            <FormField
-              label="Username"
-              htmlFor="username"
-              error={errors.username?.message}
-              hint="Used to sign in. Not case-sensitive."
-              required
-            >
-              <Input
-                {...fieldA11y("username", errors.username?.message)}
-                autoComplete="off"
-                autoCapitalize="none"
-                {...register("username")}
-              />
-            </FormField>
-            <FormField label="Email" htmlFor="email" error={errors.email?.message}>
-              <Input
-                {...fieldA11y("email", errors.email?.message)}
-                type="email"
-                autoComplete="off"
-                {...register("email")}
-              />
-            </FormField>
-            <FormField label="Phone" htmlFor="phone" error={errors.phone?.message}>
-              <Input
-                {...fieldA11y("phone", errors.phone?.message)}
-                type="tel"
-                autoComplete="off"
-                {...register("phone")}
-              />
-            </FormField>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Access</CardTitle>
-          <CardDescription>The role decides what this person can see and do.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FormField
-              label="Role"
-              htmlFor="role"
-              error={errors.role?.message}
-              hint={isSelf ? "You cannot change your own role." : undefined}
-              required
-            >
-              <Controller
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Profile</CardTitle>
+            <CardDescription>Basic details shown across the portal.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <Controller
                 control={control}
-                name="role"
+                name="avatar"
                 render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    disabled={isSelf || assignable.isLoading}
-                  >
-                    <SelectTrigger {...fieldA11y("role", errors.role?.message)} className="w-full">
-                      <SelectValue placeholder="Choose a role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {roleOptions.map((name) => (
-                        <SelectItem
-                          key={name}
-                          value={name}
-                          disabled={!assignable.roles.includes(name)}
-                        >
-                          {roleLabel(name)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <AvatarUploader
+                        name={watchedName}
+                        currentUrl={user?.avatar_url}
+                        file={field.value}
+                        removed={watchedRemoved}
+                        onFileChange={field.onChange}
+                        onRemovedChange={(removed) => setValue("removeAvatar", removed)}
+                        error={errors.avatar?.message}
+                    />
                 )}
-              />
-            </FormField>
+            />
 
-            {!editing && (
-              <FormField
-                label="Temporary password"
-                htmlFor="password"
-                error={errors.password?.message}
-                hint="At least 8 characters, with a letter and a number."
-                required
-              >
-                <PasswordInput
-                  {...fieldA11y("password", errors.password?.message)}
-                  autoComplete="new-password"
-                  {...register("password")}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField label="Full name" htmlFor="name" error={errors.name?.message} required>
+                <Input
+                    {...fieldA11y("name", errors.name?.message)}
+                    autoComplete="off"
+                    {...register("name")}
                 />
               </FormField>
-            )}
-          </div>
+              <FormField
+                  label="Username"
+                  htmlFor="username"
+                  error={errors.username?.message}
+                  hint="Used to sign in. Not case-sensitive."
+                  required
+              >
+                <Input
+                    {...fieldA11y("username", errors.username?.message)}
+                    autoComplete="off"
+                    autoCapitalize="none"
+                    {...register("username")}
+                />
+              </FormField>
+              <FormField label="Email" htmlFor="email" error={errors.email?.message}>
+                <Input
+                    {...fieldA11y("email", errors.email?.message)}
+                    type="email"
+                    autoComplete="off"
+                    {...register("email")}
+                />
+              </FormField>
+              <FormField label="Phone" htmlFor="phone" error={errors.phone?.message}>
+                <Input
+                    {...fieldA11y("phone", errors.phone?.message)}
+                    type="tel"
+                    autoComplete="off"
+                    {...register("phone")}
+                />
+              </FormField>
+            </div>
+          </CardContent>
+        </Card>
 
-          <div className="space-y-3">
-            <Controller
-              control={control}
-              name="is_active"
-              render={({ field }) => (
-                <label className="flex items-center justify-between gap-4 rounded-lg border p-3">
+        <Card>
+          <CardHeader>
+            <CardTitle>Access</CardTitle>
+            <CardDescription>The role decides what this person can see and do.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField
+                  label="Role"
+                  htmlFor="role"
+                  error={errors.role?.message}
+                  hint={isSelf ? "You cannot change your own role." : undefined}
+                  required
+              >
+                <Controller
+                    control={control}
+                    name="role"
+                    render={({ field }) => (
+                        <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            disabled={isSelf || assignable.isLoading}
+                        >
+                          <SelectTrigger {...fieldA11y("role", errors.role?.message)} className="w-full">
+                            <SelectValue placeholder="Choose a role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {roleOptions.map((name) => (
+                                <SelectItem
+                                    key={name}
+                                    value={name}
+                                    disabled={!assignable.roles.includes(name)}
+                                >
+                                  {roleLabel(name)}
+                                </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                    )}
+                />
+              </FormField>
+
+              {!editing && (
+                  <FormField
+                      label="Temporary password"
+                      htmlFor="password"
+                      error={errors.password?.message}
+                      hint="At least 8 characters, with a letter and a number."
+                      required
+                  >
+                    <PasswordInput
+                        {...fieldA11y("password", errors.password?.message)}
+                        autoComplete="new-password"
+                        {...register("password")}
+                    />
+                  </FormField>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <Controller
+                  control={control}
+                  name="is_active"
+                  render={({ field }) => (
+                      <label className="flex items-center justify-between gap-4 rounded-lg border p-3">
                   <span>
                     <span className="block text-sm font-medium">Active</span>
                     <span className="block text-sm text-muted-foreground">
                       {isSelf
-                        ? "You cannot deactivate yourself."
-                        : "Inactive users cannot sign in."}
+                          ? "You cannot deactivate yourself."
+                          : "Inactive users cannot sign in."}
                     </span>
                   </span>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    disabled={isSelf}
-                  />
-                </label>
-              )}
-            />
-            <Controller
-              control={control}
-              name="must_change_password"
-              render={({ field }) => (
-                <label className="flex items-center justify-between gap-4 rounded-lg border p-3">
+                        <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            disabled={isSelf}
+                        />
+                      </label>
+                  )}
+              />
+              <Controller
+                  control={control}
+                  name="must_change_password"
+                  render={({ field }) => (
+                      <label className="flex items-center justify-between gap-4 rounded-lg border p-3">
                   <span>
                     <span className="block text-sm font-medium">
                       Require password change at next sign-in
@@ -271,13 +272,16 @@ export function UserForm({ user }: UserFormProps) {
                       Recommended for new accounts and after resets.
                     </span>
                   </span>
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
-                </label>
-              )}
-            />
-          </div>
-        </CardContent>
-      </Card>
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      </label>
+                  )}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={() => router.back()}>
