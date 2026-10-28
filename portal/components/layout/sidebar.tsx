@@ -173,7 +173,7 @@ function SidebarGlass() {
       />
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 bg-sidebar-glass backdrop-blur-l backdrop-saturate-150"
+        className="absolute inset-0 -z-10 bg-sidebar-glass backdrop-blur-xs backdrop-saturate-150"
       />
     </>
   );
