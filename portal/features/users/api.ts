@@ -2,7 +2,7 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api/client";
-import type { Envelope, Paginated, User } from "@/lib/api/types";
+import type { Envelope, Paginated, User, UserFormData } from "@/lib/api/types";
 import { queryKeys, type UserListParams } from "@/lib/query/keys";
 
 export const USERS_PER_PAGE = 15;
@@ -31,6 +31,17 @@ export function useUser(id: number | string) {
   return useQuery({
     queryKey: queryKeys.users.detail(id),
     queryFn: async () => (await api.get<Envelope<User>>(`/users/${id}`)).data.data,
+  });
+}
+
+/** GET /users/create, or /users/{id}/edit with the user itself: the roles the actor may assign come along. */
+export function useUserForm(id?: number | string) {
+  return useQuery({
+    queryKey: queryKeys.users.form(id),
+    queryFn: async () =>
+      (await api.get<Envelope<UserFormData>>(id ? `/users/${id}/edit` : "/users/create")).data
+        .data,
+    staleTime: 0,
   });
 }
 

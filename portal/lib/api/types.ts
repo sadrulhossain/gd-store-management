@@ -43,7 +43,9 @@ export interface Role {
 }
 
 export interface PermissionItem {
+  id: number;
   name: string;
+  module: string | null;
   action: string;
   description: string | null;
 }
@@ -68,8 +70,33 @@ export interface AdminMenu {
   children?: AdminMenu[];
 }
 
+/** What GET /{resource}/create and /{resource}/{id}/edit send: the record (edit only) and its form options. */
+export interface MenuFormData {
+  menu?: AdminMenu;
+  menu_icons: string[];
+  permissions: PermissionGroup[];
+  parents: { id: number; title: string }[];
+}
+
+export interface RoleFormData {
+  role?: Role;
+  permissions: PermissionGroup[];
+}
+
+export interface UserFormData {
+  user?: User;
+  roles: string[];
+}
+
+export interface PermissionFormData {
+  permission?: PermissionItem;
+  modules: { module: string; label: string }[];
+}
+
 export interface Paginated<T> {
   data: T[];
+  /** Index-only extras such as filter choices; present when the endpoint sends them. */
+  filters?: { roles: string[] };
   meta: {
     current_page: number;
     last_page: number;

@@ -17,19 +17,22 @@ export const queryKeys = {
     all: ["users"] as const,
     list: (params: UserListParams) => ["users", "list", params] as const,
     detail: (id: number | string) => ["users", "detail", String(id)] as const,
+    form: (id?: number | string) => ["users", "form", id ?? "new"] as const,
   },
   roles: {
     all: ["roles"] as const,
     list: () => ["roles", "list"] as const,
     detail: (id: number | string) => ["roles", "detail", String(id)] as const,
+    form: (id?: number | string) => ["roles", "form", id ?? "new"] as const,
   },
   permissions: {
     all: ["permissions"] as const,
+    form: (id?: number | string) => ["permissions", "form", id ?? "new"] as const,
   },
   menus: {
     all: ["menus"] as const,
     admin: () => ["menus", "admin"] as const,
-    icons: () => ["menus", "icons"] as const,
+    form: (id?: number | string) => ["menus", "form", id ?? "new"] as const,
   },
   settings: {
     public: ["settings", "public"] as const,

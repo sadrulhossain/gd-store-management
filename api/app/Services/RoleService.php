@@ -11,7 +11,35 @@ use Spatie\Permission\Models\Role;
 
 class RoleService
 {
-    public function __construct(private readonly PermissionCache $permissionCache) {}
+    public function __construct(
+        private readonly PermissionCache $permissionCache,
+        private readonly PermissionService $permissions,
+    ) {}
+
+    /**
+     * Everything the create / edit form needs.
+     *
+     * @return array{permissions: array}
+     */
+    public function formOptions(): array
+    {
+        return ['permissions' => $this->permissions->groups()];
+    }
+
+    /**
+     * Role names, built-in roles first.
+     *
+     * @return list<string>
+     */
+    public function options(): array
+    {
+        $order = [SystemRole::OWNER, SystemRole::MANAGER, SystemRole::EMPLOYEE];
+
+        return Role::query()->where('guard_name', 'api')->pluck('name')
+            ->sortBy(fn (string $name) => [array_search($name, $order, true) === false ? 99 : array_search($name, $order, true), $name])
+            ->values()
+            ->all();
+    }
 
     /**
      * @param  list<string>  $permissions

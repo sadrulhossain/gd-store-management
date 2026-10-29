@@ -28,7 +28,11 @@ final class PermissionCatalog
                 'reset_password' => 'Reset user passwords',
             ]),
             'roles' => self::crud('Roles', 'roles'),
-            'permissions' => self::module('Permissions', ['view' => 'View the permission catalogue']),
+            'permissions' => self::module('Permissions', [
+                'view' => 'View the permission catalogue',
+                'create' => 'Create permissions',
+                'update' => 'Edit permissions',
+            ]),
             'menus' => self::crud('Menus', 'menus'),
             'settings' => self::module('Settings', ['view' => 'View settings', 'update' => 'Edit settings']),
             'audit' => self::module('Audit', ['view' => 'View the activity log']),

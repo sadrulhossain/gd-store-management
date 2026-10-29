@@ -23,6 +23,21 @@ class RoleController extends Controller
         );
     }
 
+    /** Form options for a new role. */
+    public function create(): JsonResponse
+    {
+        return response()->json(['data' => $this->roles->formOptions()]);
+    }
+
+    /** The role plus the form options for editing it. */
+    public function edit(Role $role): JsonResponse
+    {
+        return response()->json(['data' => [
+            'role' => (new RoleResource($role->load('permissions')->loadCount(['users', 'permissions'])))->resolve(),
+            ...$this->roles->formOptions(),
+        ]]);
+    }
+
     public function show(Role $role): RoleResource
     {
         return new RoleResource($role->load('permissions')->loadCount(['users', 'permissions']));

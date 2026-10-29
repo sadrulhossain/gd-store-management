@@ -45,7 +45,24 @@ class UserController extends Controller
             ->paginate($perPage)
             ->appends($request->query());
 
-        return UserResource::collection($users);
+        return UserResource::collection($users)->additional(['filters' => $this->users->indexFilters()]);
+    }
+
+    /** Form options for a new user. */
+    public function create(Request $request): JsonResponse
+    {
+        return response()->json(['data' => $this->users->formOptions($request->user())]);
+    }
+
+    /** The user plus the form options for editing them. */
+    public function edit(Request $request, User $user): JsonResponse
+    {
+        Gate::forUser($request->user())->authorize('update', $user);
+
+        return response()->json(['data' => [
+            'user' => (new UserResource($user->load('roles')))->resolve(),
+            ...$this->users->formOptions($request->user(), $user),
+        ]]);
     }
 
     public function store(StoreUserRequest $request): JsonResponse

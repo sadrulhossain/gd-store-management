@@ -20,7 +20,14 @@ class SettingSeeder extends Seeder
     {
         // Existing values are kept: later edits must survive re-seeding.
         foreach (self::DEFAULTS as $key => $value) {
-            Setting::query()->firstOrCreate(['key' => $key], ['value' => $value, 'is_public' => true]);
+            Setting::query()->firstOrCreate(
+                [
+                    'key' => $key
+                ], [
+                    'title' => ucwords(str_replace('_', ' ', $key)),
+                    'value' => $value,
+                    'is_public' => true
+                ]);
         }
     }
 }

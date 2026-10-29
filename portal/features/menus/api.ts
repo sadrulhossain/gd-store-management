@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api/client";
-import type { AdminMenu, Envelope } from "@/lib/api/types";
+import type { AdminMenu, Envelope, MenuFormData } from "@/lib/api/types";
 import { queryKeys } from "@/lib/query/keys";
 
 export function useAdminMenus() {
@@ -12,11 +12,14 @@ export function useAdminMenus() {
   });
 }
 
-export function useMenuIcons() {
+/** One call for the whole form: GET /menus/create, or /menus/{id}/edit with the item itself. */
+export function useMenuForm(id?: number) {
   return useQuery({
-    queryKey: queryKeys.menus.icons(),
-    queryFn: async () => (await api.get<Envelope<string[]>>("/menus/icons")).data.data,
-    staleTime: 10 * 60_000,
+    queryKey: queryKeys.menus.form(id),
+    queryFn: async () =>
+      (await api.get<Envelope<MenuFormData>>(id ? `/menus/${id}/edit` : "/menus/create")).data
+        .data,
+    staleTime: 0,
   });
 }
 

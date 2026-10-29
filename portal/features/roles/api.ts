@@ -2,9 +2,15 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api/client";
-import type { Envelope, PermissionGroup, Role } from "@/lib/api/types";
+import type {
+  Envelope,
+  PermissionFormData,
+  PermissionGroup,
+  PermissionItem,
+  Role,
+  RoleFormData,
+} from "@/lib/api/types";
 import { queryKeys } from "@/lib/query/keys";
-import { usePermission } from "@/lib/permissions";
 
 export function useRoles(enabled = true) {
   return useQuery({
@@ -21,11 +27,58 @@ export function useRole(id: number | string) {
   });
 }
 
+/** The Permissions page itself: the catalogue is its main data, not a dropdown list. */
 export function usePermissionGroups() {
   return useQuery({
     queryKey: queryKeys.permissions.all,
     queryFn: async () => (await api.get<Envelope<PermissionGroup[]>>("/permissions")).data.data,
-    staleTime: 5 * 60_000,
+  });
+}
+
+/** GET /permissions/create, or /permissions/{id}/edit with the permission itself. */
+export function usePermissionForm(id?: number) {
+  return useQuery({
+    queryKey: queryKeys.permissions.form(id),
+    queryFn: async () =>
+      (
+        await api.get<Envelope<PermissionFormData>>(
+          id ? `/permissions/${id}/edit` : "/permissions/create",
+        )
+      ).data.data,
+    staleTime: 0,
+  });
+}
+
+/** GET /roles/create, or /roles/{id}/edit with the role itself. */
+export function useRoleForm(id?: number | string) {
+  return useQuery({
+    queryKey: queryKeys.roles.form(id),
+    queryFn: async () =>
+      (await api.get<Envelope<RoleFormData>>(id ? `/roles/${id}/edit` : "/roles/create")).data
+        .data,
+    staleTime: 0,
+  });
+}
+
+export interface PermissionPayload {
+  name?: string;
+  module?: string;
+  description?: string | null;
+}
+
+export function useSavePermission(id?: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: PermissionPayload) =>
+      (id
+        ? await api.put<Envelope<PermissionItem>>(`/permissions/${id}`, payload)
+        : await api.post<Envelope<PermissionItem>>("/permissions", payload)
+      ).data.data,
+    meta: { silent: true },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.permissions.all });
+    },
   });
 }
 
@@ -61,29 +114,4 @@ export function useDeleteRole() {
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.roles.all }),
   });
-}
-
-const SYSTEM_ROLE_ORDER = ["owner", "manager", "employee"];
-
-/**
- * Roles the signed-in user may hand out. Mirrors the API rule (the API enforces it):
- * an Owner may assign any role; a Manager only Employee; others none.
- */
-export function useAssignableRoles(): { roles: string[]; isLoading: boolean } {
-  const { role } = usePermission();
-  const owner = role === "owner";
-  const all = useRoles(owner);
-
-  if (owner) {
-    const names = (all.data ?? []).map((item) => item.name);
-    const sorted = [...names].sort((a, b) => {
-      const ai = SYSTEM_ROLE_ORDER.indexOf(a);
-      const bi = SYSTEM_ROLE_ORDER.indexOf(b);
-      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi) || a.localeCompare(b);
-    });
-
-    return { roles: sorted, isLoading: all.isLoading };
-  }
-
-  return { roles: role === "manager" ? ["employee"] : [], isLoading: false };
 }

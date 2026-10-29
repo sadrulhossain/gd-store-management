@@ -5,12 +5,16 @@ namespace App\Services;
 use App\Exceptions\ApiException;
 use App\Models\Menu;
 use App\Models\User;
+use App\Support\MenuIcons;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class MenuService
 {
-    public function __construct(private readonly PermissionCache $permissionCache) {}
+    public function __construct(
+        private readonly PermissionCache $permissionCache,
+        private readonly PermissionService $permissions,
+    ) {}
 
     /**
      * The menu tree one user may see. A single query loads every active item and the
@@ -37,6 +41,25 @@ class MenuService
      *
      * @return Collection<int, Menu>
      */
+    /**
+     * Everything the create / edit form needs. Parents are the top-level items
+     * (the tree is two levels deep); an item is never its own parent.
+     *
+     * @return array{menu_icons: list<string>, permissions: array, parents: Collection}
+     */
+    public function formOptions(?Menu $menu = null): array
+    {
+        return [
+            'menu_icons' => MenuIcons::all(),
+            'permissions' => $this->permissions->groups(),
+            'parents' => Menu::query()
+                ->whereNull('parent_id')
+                ->when($menu, fn ($query) => $query->whereKeyNot($menu->id))
+                ->orderBy('sort_order')
+                ->get(['id', 'title']),
+        ];
+    }
+
     public function adminTree(): Collection
     {
         $all = Menu::query()->orderBy('sort_order')->orderBy('id')->get();

@@ -111,6 +111,4 @@ it('lists the permission catalogue grouped by module, read-only', function () {
         ->and($groups['users']['label'])->toBe('Users')
         ->and(collect($groups['pos']['permissions'])->pluck('name')->all())
         ->toContain('pos.sell', 'pos.void', 'pos.cashier_session');
-
-    $this->postJson('/api/v1/permissions', [])->assertStatus(405);
 });
