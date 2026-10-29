@@ -258,7 +258,6 @@ export function MenusView() {
 
       <MenuFormDialog
         target={dialog}
-        parents={menus.data ?? []}
         onOpenChange={(open) => !open && setDialog(null)}
       />
 

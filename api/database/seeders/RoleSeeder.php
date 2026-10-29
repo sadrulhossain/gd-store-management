@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Permission;
 use App\Services\PermissionCache;
 use App\Support\PermissionCatalog;
 use App\Support\SystemRole;
@@ -14,7 +15,8 @@ class RoleSeeder extends Seeder
     {
         // Owner always holds every permission: re-synced on every run.
         $owner = Role::query()->firstOrCreate(['name' => SystemRole::OWNER, 'guard_name' => 'api']);
-        $owner->syncPermissions(PermissionCatalog::names());
+        // Includes permissions created in the UI, which are not in the catalogue.
+        $owner->syncPermissions(Permission::query()->where('guard_name', 'api')->pluck('name')->all());
 
         // Manager and Employee get defaults only when first created, so the Owner's
         // later customisation is never overwritten by re-seeding.

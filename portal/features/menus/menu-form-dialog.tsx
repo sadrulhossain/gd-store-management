@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { ErrorState } from "@/components/common/error-state";
 import { FormField, fieldA11y } from "@/components/common/form-field";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,11 +23,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { useMenuIcons, useSaveMenu } from "@/features/menus/api";
-import { usePermissionGroups } from "@/features/roles/api";
+import { useMenuForm, useSaveMenu } from "@/features/menus/api";
 import { isApiError } from "@/lib/api/client";
-import type { AdminMenu } from "@/lib/api/types";
+import type { AdminMenu, MenuFormData } from "@/lib/api/types";
 import { applyServerErrors, blankToNull } from "@/lib/forms";
 import { MenuIcon } from "@/components/common/menu-icon";
 
@@ -65,21 +66,18 @@ export interface MenuDialogTarget {
 
 interface MenuFormDialogProps {
   target: MenuDialogTarget | null;
-  /** Top-level items a menu may be nested under. */
-  parents: AdminMenu[];
   onOpenChange: (open: boolean) => void;
 }
 
-export function MenuFormDialog({ target, parents, onOpenChange }: MenuFormDialogProps) {
+export function MenuFormDialog({ target, onOpenChange }: MenuFormDialogProps) {
   return (
     <Dialog open={target !== null} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         {/* Mounted per target so the form always starts from that item's values. */}
         {target && (
-          <MenuForm
+          <MenuFormLoader
             key={target.menu?.id ?? "new"}
             target={target}
-            parents={parents}
             onDone={() => onOpenChange(false)}
           />
         )}
@@ -88,21 +86,46 @@ export function MenuFormDialog({ target, parents, onOpenChange }: MenuFormDialog
   );
 }
 
+/** One request (create or edit) brings the item and every list the form shows. */
+function MenuFormLoader({ target, onDone }: { target: MenuDialogTarget; onDone: () => void }) {
+  const form = useMenuForm(target.menu?.id);
+
+  if (form.isPending || form.isError) {
+    return (
+      <>
+        <DialogHeader>
+          <DialogTitle>{target.menu ? "Edit menu item" : "New menu item"}</DialogTitle>
+          <DialogDescription className="sr-only">Loading the form.</DialogDescription>
+        </DialogHeader>
+        {form.isError ? (
+          <ErrorState message={form.error.message} onRetry={() => form.refetch()} />
+        ) : (
+          <div className="space-y-4" aria-busy="true">
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-9 w-full" />
+          </div>
+        )}
+      </>
+    );
+  }
+
+  return <MenuForm target={target} data={form.data} onDone={onDone} />;
+}
+
 function MenuForm({
   target,
-  parents,
+  data,
   onDone,
 }: {
   target: MenuDialogTarget;
-  parents: AdminMenu[];
+  data: MenuFormData;
   onDone: () => void;
 }) {
-  const menu = target.menu;
+  const menu = data.menu;
   const editing = Boolean(menu);
   const isSystem = menu?.is_system ?? false;
   const save = useSaveMenu(menu?.id);
-  const icons = useMenuIcons();
-  const groups = usePermissionGroups();
 
   const {
     register,
@@ -123,7 +146,6 @@ function MenuForm({
     },
   });
 
-  const parentOptions = parents.filter((parent) => parent.id !== menu?.id);
   // A parent with children cannot become a child (the API allows two levels only).
   const canReparent = !menu || (menu.children ?? []).length === 0;
 
@@ -230,7 +252,7 @@ function MenuForm({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={NONE}>No icon</SelectItem>
-                  {(icons.data ?? []).map((name) => {
+                  {data.menu_icons.map((name) => {
                     return (
                       <SelectItem key={name} value={name}>
                         <MenuIcon icon={name} /> {name}
@@ -258,7 +280,7 @@ function MenuForm({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={NONE}>Top level</SelectItem>
-                  {parentOptions.map((parent) => (
+                  {data.parents.map((parent) => (
                     <SelectItem key={parent.id} value={String(parent.id)}>
                       {parent.title}
                     </SelectItem>
@@ -286,7 +308,7 @@ function MenuForm({
               </SelectTrigger>
               <SelectContent className="max-h-72">
                 <SelectItem value={NONE}>Everyone</SelectItem>
-                {(groups.data ?? []).flatMap((group) =>
+                {data.permissions.flatMap((group) =>
                   group.permissions.map((permission) => (
                     <SelectItem key={permission.name} value={permission.name}>
                       {permission.name}

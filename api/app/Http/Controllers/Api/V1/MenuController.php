@@ -9,7 +9,6 @@ use App\Http\Requests\Menus\UpdateMenuRequest;
 use App\Http\Resources\MenuResource;
 use App\Models\Menu;
 use App\Services\MenuService;
-use App\Support\MenuIcons;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -30,16 +29,26 @@ class MenuController extends Controller
         return response()->json(['data' => $this->menus->treeFor($request->user())]);
     }
 
-    public function icons(): JsonResponse
+    /** Form options for a new item. */
+    public function create(): JsonResponse
     {
-        return response()->json(['data' => MenuIcons::all()]);
+        return response()->json(['data' => $this->menus->formOptions()]);
+    }
+
+    /** The item plus the form options for editing it. */
+    public function edit(Menu $menu): JsonResponse
+    {
+        return response()->json(['data' => [
+            'menu' => new MenuResource($menu->load('children'))->resolve(),
+            ...$this->menus->formOptions($menu),
+        ]]);
     }
 
     public function store(StoreMenuRequest $request): JsonResponse
     {
         $menu = $this->menus->create($request->validated());
 
-        return (new MenuResource($menu))->response()->setStatusCode(201);
+        return new MenuResource($menu)->response()->setStatusCode(201);
     }
 
     public function update(UpdateMenuRequest $request, Menu $menu): MenuResource

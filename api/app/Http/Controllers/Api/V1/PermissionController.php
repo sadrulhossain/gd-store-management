@@ -3,35 +3,52 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Permissions\StorePermissionRequest;
+use App\Http\Requests\Permissions\UpdatePermissionRequest;
 use App\Models\Permission;
-use App\Support\PermissionCatalog;
+use App\Services\PermissionService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Str;
 
 class PermissionController extends Controller
 {
-    /** Read-only, grouped by module. Permissions are defined in code (PermissionCatalog). */
+    public function __construct(private readonly PermissionService $permissions) {}
+
+    /** Grouped by module. */
     public function index(): JsonResponse
     {
-        $labels = PermissionCatalog::modules();
+        return response()->json(['data' => $this->permissions->groups()]);
+    }
 
-        $groups = Permission::query()
-            ->where('guard_name', 'api')
-            ->orderBy('module')
-            ->orderBy('id')
-            ->get()
-            ->groupBy('module')
-            ->map(fn ($permissions, $module) => [
-                'module' => $module,
-                'label' => $labels[$module]['label'] ?? Str::headline((string) $module),
-                'permissions' => $permissions->map(fn (Permission $permission) => [
-                    'name' => $permission->name,
-                    'action' => Str::after($permission->name, '.'),
-                    'description' => $permission->description,
-                ])->values(),
-            ])
-            ->values();
+    /** Form options for a new permission. */
+    public function create(): JsonResponse
+    {
+        return response()->json(['data' => $this->permissions->formOptions()]);
+    }
 
-        return response()->json(['data' => $groups]);
+    /** The permission plus the form options for editing it. */
+    public function edit(Permission $permission): JsonResponse
+    {
+        abort_unless($permission->guard_name === 'api', 404);
+
+        return response()->json(['data' => [
+            'permission' => $this->permissions->present($permission),
+            ...$this->permissions->formOptions(),
+        ]]);
+    }
+
+    public function store(StorePermissionRequest $request): JsonResponse
+    {
+        $permission = $this->permissions->create($request->validated());
+
+        return response()->json(['data' => $this->permissions->present($permission)], 201);
+    }
+
+    public function update(UpdatePermissionRequest $request, Permission $permission): JsonResponse
+    {
+        abort_unless($permission->guard_name === 'api', 404);
+
+        $permission = $this->permissions->update($permission, $request->validated());
+
+        return response()->json(['data' => $this->permissions->present($permission)]);
     }
 }

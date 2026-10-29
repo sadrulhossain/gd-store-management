@@ -1,19 +1,25 @@
 "use client";
 
-import { SearchIcon } from "lucide-react";
+import { PencilIcon, PlusIcon, SearchIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { EmptyState } from "@/components/common/empty-state";
 import { ErrorState } from "@/components/common/error-state";
 import { PageHeader } from "@/components/common/page-header";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePermissionGroups } from "@/features/roles/api";
+import {
+  PermissionFormDialog,
+  type PermissionDialogTarget,
+} from "@/features/roles/permission-form-dialog";
+import { Can } from "@/lib/permissions";
 
-/** Read-only catalogue: permissions are defined in code, never at runtime. */
 export function PermissionsView() {
   const groups = usePermissionGroups();
   const [query, setQuery] = useState("");
+  const [dialog, setDialog] = useState<PermissionDialogTarget | null>(null);
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -37,6 +43,13 @@ export function PermissionsView() {
       <PageHeader
         title="Permissions"
         description="Every permission the system knows about, grouped by module. Assign them to roles on the Roles page."
+        actions={
+          <Can permission="permissions.create">
+            <Button onClick={() => setDialog({})}>
+              <PlusIcon aria-hidden /> New permission
+            </Button>
+          </Can>
+        }
       />
 
       <div className="relative max-w-sm">
@@ -80,7 +93,19 @@ export function PermissionsView() {
                       className="flex flex-col gap-0.5 py-2 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <span className="text-sm">{permission.description}</span>
-                      <code className="text-xs text-muted-foreground">{permission.name}</code>
+                      <span className="flex items-center gap-1">
+                        <code className="text-xs text-muted-foreground">{permission.name}</code>
+                        <Can permission="permissions.update">
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label={`Edit ${permission.name}`}
+                            onClick={() => setDialog({ permission })}
+                          >
+                            <PencilIcon aria-hidden />
+                          </Button>
+                        </Can>
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -89,6 +114,8 @@ export function PermissionsView() {
           ))}
         </div>
       )}
+
+      <PermissionFormDialog target={dialog} onOpenChange={(open) => !open && setDialog(null)} />
     </>
   );
 }

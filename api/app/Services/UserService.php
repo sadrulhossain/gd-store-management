@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Policies\UserPolicy;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +14,36 @@ class UserService
         private readonly FileStorageService $files,
         private readonly AuthService $auth,
         private readonly PermissionCache $permissionCache,
+        private readonly RoleService $roles,
     ) {}
+
+    /**
+     * What the index screen needs besides the rows.
+     *
+     * @return array{roles: list<string>}
+     */
+    public function indexFilters(): array
+    {
+        return ['roles' => $this->roles->options()];
+    }
+
+    /**
+     * Everything the create / edit form needs: only the roles the actor may assign,
+     * plus the user's current role so it stays selectable.
+     *
+     * @return array{roles: list<string>}
+     */
+    public function formOptions(User $actor, ?User $target = null): array
+    {
+        $policy = app(UserPolicy::class);
+
+        $roles = array_values(array_filter(
+            $this->roles->options(),
+            fn (string $role) => $role === $target?->roleName() || $policy->assignRole($actor, $role, $target),
+        ));
+
+        return ['roles' => $roles];
+    }
 
     /** @param  array<string, mixed>  $data  validated input incl. "role" and optional "avatar" */
     public function create(User $actor, array $data, ?UploadedFile $avatar = null): User

@@ -115,8 +115,25 @@ it('rejects a reorder that would create a cycle or deep nesting', function () {
         ->assertStatus(409);
 });
 
-it('exposes the icon whitelist', function () {
+it('sends everything the create form needs', function () {
     $this->actingAsRole('owner');
 
-    expect($this->getJson('/api/v1/menus/icons')->json('data'))->toContain('layout-dashboard', 'users');
+    $data = $this->getJson('/api/v1/menus/create')->assertOk()
+        ->assertJsonStructure(['data' => ['menu_icons', 'permissions', 'parents' => [['id', 'title']]]])
+        ->json('data');
+
+    expect($data['menu_icons'])->toContain('layout-dashboard', 'users')
+        ->and($data['permissions'])->not->toBeEmpty();
+});
+
+it('sends the item and its form options for edit, without itself as a parent', function () {
+    $this->actingAsRole('owner');
+    $menu = Menu::query()->whereNull('parent_id')->firstOrFail();
+
+    $data = $this->getJson("/api/v1/menus/{$menu->id}/edit")->assertOk()
+        ->assertJsonPath('data.menu.id', $menu->id)
+        ->json('data');
+
+    expect(collect($data['parents'])->pluck('id'))->not->toContain($menu->id)
+        ->and($data['menu_icons'])->not->toBeEmpty();
 });

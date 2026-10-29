@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useMe } from "@/features/auth/api";
-import { useAssignableRoles } from "@/features/roles/api";
 import { useSaveUser } from "@/features/users/api";
 import {
   createUserSchema,
@@ -35,14 +34,15 @@ import { applyServerErrors, blankToNull } from "@/lib/forms";
 interface UserFormProps {
   /** Present when editing. */
   user?: User;
+  /** Roles the signed-in user may assign (sent by the create / edit endpoint). */
+  roles: string[];
 }
 
-export function UserForm({ user }: UserFormProps) {
+export function UserForm({ user, roles }: UserFormProps) {
   const router = useRouter();
   const editing = Boolean(user);
   const me = useMe().data;
   const isSelf = editing && me?.user.id === user?.id;
-  const assignable = useAssignableRoles();
   const save = useSaveUser(user?.id);
 
   const {
@@ -71,11 +71,6 @@ export function UserForm({ user }: UserFormProps) {
 
   const watchedName = useWatch({ control, name: "name" });
   const watchedRemoved = useWatch({ control, name: "removeAvatar" });
-
-  // Keep the user's current role selectable even if the actor could not assign it.
-  const roleOptions = Array.from(
-    new Set([...(user?.role ? [user.role] : []), ...assignable.roles]),
-  );
 
   const onSubmit = handleSubmit(async (values) => {
     try {
@@ -199,18 +194,14 @@ export function UserForm({ user }: UserFormProps) {
                         <Select
                             value={field.value}
                             onValueChange={field.onChange}
-                            disabled={isSelf || assignable.isLoading}
+                            disabled={isSelf}
                         >
                           <SelectTrigger {...fieldA11y("role", errors.role?.message)} className="w-full">
                             <SelectValue placeholder="Choose a role" />
                           </SelectTrigger>
                           <SelectContent>
-                            {roleOptions.map((name) => (
-                                <SelectItem
-                                    key={name}
-                                    value={name}
-                                    disabled={!assignable.roles.includes(name)}
-                                >
+                            {roles.map((name) => (
+                                <SelectItem key={name} value={name}>
                                   {roleLabel(name)}
                                 </SelectItem>
                             ))}

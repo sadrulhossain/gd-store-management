@@ -6,16 +6,14 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { ErrorState } from "@/components/common/error-state";
 import { FormField, fieldA11y } from "@/components/common/form-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import { usePermissionGroups, useSaveRole } from "@/features/roles/api";
+import { useSaveRole } from "@/features/roles/api";
 import { PermissionMatrix } from "@/features/roles/permission-matrix";
 import { isApiError } from "@/lib/api/client";
-import type { Role } from "@/lib/api/types";
+import type { PermissionGroup, Role } from "@/lib/api/types";
 import { applyServerErrors } from "@/lib/forms";
 import { usePermission } from "@/lib/permissions";
 
@@ -33,12 +31,13 @@ type Values = z.infer<typeof schema>;
 interface RoleFormProps {
   /** Present when editing. */
   role?: Role;
+  /** Every permission, grouped by module (sent by the create / edit endpoint). */
+  permissions: PermissionGroup[];
 }
 
-export function RoleForm({ role }: RoleFormProps) {
+export function RoleForm({ role, permissions }: RoleFormProps) {
   const router = useRouter();
   const { can } = usePermission();
-  const groups = usePermissionGroups();
   const save = useSaveRole(role?.id);
 
   const isOwner = role?.name === "owner";
@@ -128,26 +127,20 @@ export function RoleForm({ role }: RoleFormProps) {
           </p>
         </div>
 
-        {groups.isPending ? (
-          <Skeleton className="h-64 w-full" aria-busy="true" />
-        ) : groups.isError ? (
-          <ErrorState message={groups.error.message} onRetry={() => groups.refetch()} />
-        ) : (
-          <PermissionMatrix
-            groups={groups.data}
-            selected={
-              isOwner
-                ? new Set(
-                    groups.data.flatMap((group) =>
-                      group.permissions.map((permission) => permission.name),
-                    ),
-                  )
-                : selected
-            }
-            onChange={setSelected}
-            disabled={isOwner || !canSave}
-          />
-        )}
+        <PermissionMatrix
+          groups={permissions}
+          selected={
+            isOwner
+              ? new Set(
+                  permissions.flatMap((group) =>
+                    group.permissions.map((permission) => permission.name),
+                  ),
+                )
+              : selected
+          }
+          onChange={setSelected}
+          disabled={isOwner || !canSave}
+        />
       </section>
 
       <div className="flex justify-end gap-2">

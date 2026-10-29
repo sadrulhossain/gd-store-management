@@ -38,7 +38,6 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useMe } from "@/features/auth/api";
-import { useRoles } from "@/features/roles/api";
 import { useDeleteUser, useSetUserStatus, useUsers, USERS_PER_PAGE } from "@/features/users/api";
 import { ResetPasswordDialog } from "@/features/users/reset-password-dialog";
 import type { User } from "@/lib/api/types";
@@ -86,9 +85,8 @@ export function UsersList() {
   };
 
   const users = useUsers({ page, search: query, role, status, sort });
-  // The roles endpoint needs roles.view; managers fall back to the built-in roles.
-  const roles = useRoles(can("roles.view"));
-  const roleOptions = roles.data?.map((item) => item.name) ?? SYSTEM_ROLES;
+  // The index response carries the filter choices, so the list needs no extra request.
+  const roleOptions = users.data?.filters?.roles ?? SYSTEM_ROLES;
 
   const setStatus = useSetUserStatus();
   const remove = useDeleteUser();
