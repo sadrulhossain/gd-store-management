@@ -93,6 +93,20 @@ export interface PermissionFormData {
   modules: { module: string; label: string }[];
 }
 
+export interface Setting {
+  id: number;
+  title: string;
+  key: string;
+  value: string;
+  is_public: boolean;
+  public: string;
+}
+
+/** What GET /{resource}/create and /{resource}/{id}/edit send: the record (edit only) and its form options. */
+export interface SettingFormData {
+  setting?: Setting;
+}
+
 export interface Paginated<T> {
   data: T[];
   /** Index-only extras such as filter choices; present when the endpoint sends them. */

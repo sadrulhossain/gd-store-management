@@ -11,8 +11,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Setting extends Model
 {
-    private const string PUBLIC_YES = 'Yes';
-    private const string PUBLIC_NO = 'No';
+    private const string PUBLIC = 'Public';
+    private const string PRIVATE = 'Private';
     protected $fillable = ['key', 'value', 'is_public'];
 
     protected function casts(): array
@@ -22,7 +22,7 @@ class Setting extends Model
 
     public function getPublicAttribute(): string
     {
-        return $this->is_public ? self::PUBLIC_YES : self::PUBLIC_NO;
+        return $this->is_public ? self::PUBLIC : self::PRIVATE;
     }
 
     public function scopePublic($query)

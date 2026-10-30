@@ -36,5 +36,7 @@ export const queryKeys = {
   },
   settings: {
     public: ["settings", "public"] as const,
+    list: () => ["settings"] as const,
+    form: (id?: number | string) => ["settings", "form", id ?? "new"] as const,
   },
 };

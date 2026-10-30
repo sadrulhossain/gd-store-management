@@ -21,151 +21,202 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { useAdminMenus, useDeleteMenu, useReorderMenus, useToggleMenu } from "@/features/menus/api";
 import { MenuFormDialog, type MenuDialogTarget } from "@/features/menus/menu-form-dialog";
-import type { AdminMenu } from "@/lib/api/types";
+import type {AdminMenu, Setting} from "@/lib/api/types";
 import { MenuIcon } from "@/components/common/menu-icon";
 import { Can, usePermission } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
+import {useSettings, useToggleSetting} from "@/features/settings/api";
 
 interface RowProps {
+  setting: Setting;
+  onEdit: (setting: Setting) => void;
+  onToggle: (setting: Setting, is_public: boolean) => void;
+  busy: boolean;
+
   menu: AdminMenu;
   siblings: AdminMenu[];
   depth: number;
-  onEdit: (menu: AdminMenu) => void;
   onAddChild: (parent: AdminMenu) => void;
   onDelete: (menu: AdminMenu) => void;
   onMove: (siblings: AdminMenu[], index: number, direction: -1 | 1) => void;
-  onToggle: (menu: AdminMenu, active: boolean) => void;
-  busy: boolean;
+}
+
+function SettingRow({setting, onEdit, onToggle, busy}: RowProps) {
+  const { can } = usePermission();
+  const editable = can("settings.update");
+
+  return (
+      <li>
+        <div
+            className={cn(
+                "flex flex-wrap items-center gap-3 border-b px-4 py-3",
+                !setting.is_public && "opacity-90",
+            )}
+        >
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-medium">{setting.title}</span>
+              <Badge variant="secondary">{ setting.public }</Badge>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            {editable && (
+                <Switch
+                    checked={setting.is_public}
+                    disabled={!editable || busy}
+                    aria-label={`${setting.is_public ? "Hide" : "Show"} ${setting.title}`}
+                    onCheckedChange={(checked) => onToggle(setting, checked)}
+                />
+            )}
+            {editable && (
+                <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={`Edit ${setting.title}`}
+                    onClick={() => onEdit(setting)}
+                >
+                  <PencilIcon aria-hidden />
+                </Button>
+            )}
+          </div>
+        </div>
+      </li>
+  );
 }
 
 function MenuRow({
-  menu,
-  siblings,
-  depth,
-  onEdit,
-  onAddChild,
-  onDelete,
-  onMove,
-  onToggle,
-  busy,
-}: RowProps) {
+                   menu,
+                   siblings,
+                   depth,
+                   onEdit,
+                   onAddChild,
+                   onDelete,
+                   onMove,
+                   onToggle,
+                   busy,
+                 }: RowProps) {
   const { can } = usePermission();
   const index = siblings.findIndex((item) => item.id === menu.id);
   const editable = can("menus.update");
 
   return (
-    <li>
-      <div
-        className={cn(
-          "flex flex-wrap items-center gap-3 border-b px-4 py-3",
-          depth > 0 && "bg-muted/30 pl-10 sm:pl-14",
-          !menu.is_active && "opacity-70",
-        )}
-      >
-        <MenuIcon icon={menu.icon} className="size-4 shrink-0 text-muted-foreground" />
-
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-medium">{menu.title}</span>
-            {menu.is_system && <Badge variant="secondary">Built-in</Badge>}
-            {!menu.is_active && <Badge variant="outline">Hidden</Badge>}
-          </div>
-          <p className="truncate text-xs text-muted-foreground">
-            {menu.path ?? "Group"}
-            {menu.permission_name && (
-              <>
-                {" · requires "}
-                <code>{menu.permission_name}</code>
-              </>
+      <li>
+        <div
+            className={cn(
+                "flex flex-wrap items-center gap-3 border-b px-4 py-3",
+                depth > 0 && "bg-muted/30 pl-10 sm:pl-14",
+                !menu.is_active && "opacity-70",
             )}
-          </p>
-        </div>
+        >
+          <MenuIcon icon={menu.icon} className="size-4 shrink-0 text-muted-foreground" />
 
-        <div className="flex items-center gap-1">
-          {editable && (
-            <>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label={`Move ${menu.title} up`}
-                disabled={busy || index === 0}
-                onClick={() => onMove(siblings, index, -1)}
-              >
-                <ArrowUpIcon aria-hidden />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label={`Move ${menu.title} down`}
-                disabled={busy || index === siblings.length - 1}
-                onClick={() => onMove(siblings, index, 1)}
-              >
-                <ArrowDownIcon aria-hidden />
-              </Button>
-            </>
-          )}
-          <Switch
-            checked={menu.is_active}
-            disabled={!editable || busy}
-            aria-label={`${menu.is_active ? "Hide" : "Show"} ${menu.title}`}
-            onCheckedChange={(checked) => onToggle(menu, checked)}
-          />
-          {depth === 0 && can("menus.create") && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={`Add item under ${menu.title}`}
-              onClick={() => onAddChild(menu)}
-            >
-              <PlusIcon aria-hidden />
-            </Button>
-          )}
-          {editable && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={`Edit ${menu.title}`}
-              onClick={() => onEdit(menu)}
-            >
-              <PencilIcon aria-hidden />
-            </Button>
-          )}
-          {can("menus.delete") && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="text-danger hover:text-danger"
-              aria-label={`Delete ${menu.title}`}
-              disabled={menu.is_system}
-              title={menu.is_system ? "Built-in items cannot be deleted." : undefined}
-              onClick={() => onDelete(menu)}
-            >
-              <Trash2Icon aria-hidden />
-            </Button>
-          )}
-        </div>
-      </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-medium">{menu.title}</span>
+              {menu.is_system && <Badge variant="secondary">Built-in</Badge>}
+              {!menu.is_active && <Badge variant="outline">Hidden</Badge>}
+            </div>
+            <p className="truncate text-xs text-muted-foreground">
+              {menu.path ?? "Group"}
+              {menu.permission_name && (
+                  <>
+                    {" · requires "}
+                    <code>{menu.permission_name}</code>
+                  </>
+              )}
+            </p>
+          </div>
 
-      {(menu.children ?? []).length > 0 && (
-        <ul>
-          {(menu.children ?? []).map((child) => (
-            <MenuRow
-              key={child.id}
-              menu={child}
-              siblings={menu.children ?? []}
-              depth={depth + 1}
-              onEdit={onEdit}
-              onAddChild={onAddChild}
-              onDelete={onDelete}
-              onMove={onMove}
-              onToggle={onToggle}
-              busy={busy}
+          <div className="flex items-center gap-1">
+            {editable && (
+                <>
+                  <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={`Move ${menu.title} up`}
+                      disabled={busy || index === 0}
+                      onClick={() => onMove(siblings, index, -1)}
+                  >
+                    <ArrowUpIcon aria-hidden />
+                  </Button>
+                  <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={`Move ${menu.title} down`}
+                      disabled={busy || index === siblings.length - 1}
+                      onClick={() => onMove(siblings, index, 1)}
+                  >
+                    <ArrowDownIcon aria-hidden />
+                  </Button>
+                </>
+            )}
+            <Switch
+                checked={menu.is_active}
+                disabled={!editable || busy}
+                aria-label={`${menu.is_active ? "Hide" : "Show"} ${menu.title}`}
+                onCheckedChange={(checked) => onToggle(menu, checked)}
             />
-          ))}
-        </ul>
-      )}
-    </li>
+            {depth === 0 && can("menus.create") && (
+                <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={`Add item under ${menu.title}`}
+                    onClick={() => onAddChild(menu)}
+                >
+                  <PlusIcon aria-hidden />
+                </Button>
+            )}
+            {editable && (
+                <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={`Edit ${menu.title}`}
+                    onClick={() => onEdit(menu)}
+                >
+                  <PencilIcon aria-hidden />
+                </Button>
+            )}
+            {can("menus.delete") && (
+                <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-danger hover:text-danger"
+                    aria-label={`Delete ${menu.title}`}
+                    disabled={menu.is_system}
+                    title={menu.is_system ? "Built-in items cannot be deleted." : undefined}
+                    onClick={() => onDelete(menu)}
+                >
+                  <Trash2Icon aria-hidden />
+                </Button>
+            )}
+          </div>
+        </div>
+
+        {(menu.children ?? []).length > 0 && (
+            <ul>
+              {(menu.children ?? []).map((child) => (
+                  <MenuRow
+                      key={child.id}
+                      menu={child}
+                      siblings={menu.children ?? []}
+                      depth={depth + 1}
+                      onEdit={onEdit}
+                      onAddChild={onAddChild}
+                      onDelete={onDelete}
+                      onMove={onMove}
+                      onToggle={onToggle}
+                      busy={busy}
+                  />
+              ))}
+            </ul>
+        )}
+      </li>
   );
+}
+
+export function SettingsView() {
+  const settings = useSettings();
+  const toggle = useToggleSetting();
 }
 
 export function MenusView() {

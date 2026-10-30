@@ -35,7 +35,7 @@ class SettingController extends Controller
     public function edit(Request $request, Setting $setting): JsonResponse
     {
         return response()->json(['data' => [
-            'settings' => new SettingResource($setting)->resolve()
+            'setting' => new SettingResource($setting)->resolve()
         ]]);
     }
 
