@@ -15,6 +15,7 @@ import type { Tokens } from "./session";
  */
 const GRACE_MS = 30_000;
 const FAILURE_TTL_MS = 5_000;
+const REQUEST_TIMEOUT_MS = 15_000;
 
 interface Entry {
   promise: Promise<Tokens | null>;
@@ -37,6 +38,9 @@ async function requestNewTokens(refreshToken: string): Promise<Tokens | null> {
     headers: { Accept: "application/json", "Content-Type": "application/json" },
     body: JSON.stringify({ refresh_token: refreshToken }),
     cache: "no-store",
+    // Without a deadline a dead keep-alive socket (e.g. after a long idle) would leave this promise
+    // pending forever, and every later refresh with the same token would join it.
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
 
   if (response.status === 401 || response.status === 422) return null;
