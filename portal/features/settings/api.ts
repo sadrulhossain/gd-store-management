@@ -43,7 +43,6 @@ export interface SettingPayload {
   key: string;
   value: string;
   is_public: boolean;
-  public: string;
 }
 
 /** Settings feed the sidebar via /auth/me, so every change refreshes both. */
@@ -52,6 +51,8 @@ function useInvalidateSettings() {
 
   return () => {
     queryClient.invalidateQueries({ queryKey: queryKeys.settings.public });
+    queryClient.invalidateQueries({ queryKey: queryKeys.settings.list() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.settings.form() });
   };
 }
 

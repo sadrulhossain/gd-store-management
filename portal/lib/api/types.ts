@@ -99,7 +99,6 @@ export interface Setting {
   key: string;
   value: string;
   is_public: boolean;
-  public: string;
 }
 
 /** What GET /{resource}/create and /{resource}/{id}/edit send: the record (edit only) and its form options. */

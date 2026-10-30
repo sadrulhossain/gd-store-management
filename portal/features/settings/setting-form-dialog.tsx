@@ -119,7 +119,7 @@ function SettingForm({
       title: setting?.title ?? "",
       key: setting?.key ?? "",
       value: setting?.value ?? "",
-      is_public: setting?.is_public ?? true,
+      is_public: setting?.is_public ?? false,
     },
   });
 

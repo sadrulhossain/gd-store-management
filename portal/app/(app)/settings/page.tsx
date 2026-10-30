@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { MenusView } from "@/features/menus/menus-view";
+import {SettingsView} from "@/features/settings/setting-view";
 
-export const metadata: Metadata = { title: "Menus" };
+export const metadata: Metadata = { title: "Settings" };
 
-export default function MenusPage() {
-  return <MenusView />;
+export default function SettingsPage() {
+  return <SettingsView />;
 }
