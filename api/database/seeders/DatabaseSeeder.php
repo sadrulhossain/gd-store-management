@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             DemoUserSeeder::class,
             PassportClientSeeder::class,
+            ProductCatalogueSeeder::class,
         ]);
     }
 }
